@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Giải mật thư</title>
+    <style>
+        body {
+            background: #e0f7fa;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #007BFF;
+            font-weight: bold;
+            word-wrap: break-word;
+        }
+	span#result {
+            color: #007BFF;
+            font-weight: bold;
+        }
+	span#ketqua {
+            color: #007BFF;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Chức năng 1: Giải mã Caesar -->
+    <div class="container">
+        <h2>Giải mật thư tiến-lùi chữ</h2>
+
+        <label for="vanban">Nhập BV:</label><br>
+        <textarea id="vanban" rows="4" cols="50"></textarea><br><br>
+
+        <label for="buoc">Tiến hoặc lùi (vd: 1975, -2, hoặc 12 -5 7 ...):</label><br>
+        <input type="text" id="buoc"><br><br>
+
+        <button onclick="maHoa()">Dịch</button>
+
+        
+	<p><strong>ĐÁP ÁN:</strong> <span id="ketqua"></span></p>
+	<p id="ketqua" style="margin-top: 10px; font-size: 16px;"></p>
+    </div>
+
+    <script>
+        function phanTichBuoc(input) {
+            let buocList = [];
+            if (input.includes(' ')) {
+                input.trim().split(/\s+/).forEach(token => {
+                    let n = parseInt(token);
+                    if (!isNaN(n)) buocList.push(n);
+                });
+            } else {
+                let am = input[0] === '-';
+                let so = am ? input.slice(1) : input;
+                for (let c of so) {
+                    if (!isNaN(parseInt(c))) {
+                        buocList.push((am ? -1 : 1) * parseInt(c));
+                    }
+                }
+            }
+            return buocList;
+        }
+
+        function maHoaCaesarTheoBuoc(text, buocList) {
+            let result = '';
+            let len = buocList.length;
+            let indexBuoc = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                if (/[a-zA-Z]/.test(c)) {
+                    let buoc = buocList[indexBuoc % len];
+                    let base = c === c.toUpperCase() ? 'A'.charCodeAt(0) : 'a'.charCodeAt(0);
+                    let newChar = String.fromCharCode((c.charCodeAt(0) - base + buoc + 2600) % 26 + base);
+                    result += newChar;
+                    indexBuoc++;
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+
+        function maHoa() {
+            let vanban = document.getElementById("vanban").value;
+            let buocChuoi = document.getElementById("buoc").value;
+
+            let buocList = phanTichBuoc(buocChuoi);
+            if (buocList.length === 0) {
+                document.getElementById("ketqua").innerText = "Lỗi!";
+                return;
+            }
+
+            let ketqua = maHoaCaesarTheoBuoc(vanban, buocList);
+            document.getElementById("ketqua").innerText = ketqua;
+	}
+    </script>
+
+    <!-- Chức năng 2: Xóa ký tự trùng -->
+    <div class="container">
+        <h3>Xóa ký tự trùng</h3>
+	<label for="inputText">Nhập chuỗi:</label><br>
+	<textarea id="inputText" rows="4" cols="50"></textarea><br><br>
+	<button onclick="removeDuplicates()">Xử lý</button>
+        <p><strong>ĐÁP ÁN:</strong> <span id="result"></span></p>
+	<p id="count" style="margin-top: 10px; font-size: 16px;"></p>
+    </div>
+
+    <script>
+         function removeDuplicates() {
+        const input = document.getElementById("inputText").value.toLowerCase();
+        let uniquePart = "";
+        const appeared = new Set();
+
+        for (let c of input) {
+            if (c === ' ') continue;
+            if (!appeared.has(c)) {
+                uniquePart += c;
+                appeared.add(c);
+            }
+        }
+
+        const alphabet = "abcdefghijklmnopqrstuvwxyz";
+        let missingPart = "";
+        for (let c of alphabet) {
+            if (!appeared.has(c)) {
+                missingPart += c;
+            }
+        }
+
+        const finalResult = uniquePart + " " + missingPart;
+        const count = uniquePart.length;
+
+        document.getElementById("result").innerText = finalResult;
+        document.getElementById("count").innerHTML = `
+            Số ký tự của <strong>${uniquePart}</strong> :: <strong>${count}</strong><br>
+            Số ký tự của <strong>${missingPart}</strong> :: <strong>${26 - count}</strong>
+	`;
+        }
+    </script>
+
+</body>
+</html>
